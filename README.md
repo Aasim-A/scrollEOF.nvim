@@ -2,7 +2,7 @@ scrollEOF.nvim
 ==============
 A simple and lightweight plugin to make scrolloff go past the end of the file. It uses the value of `scrolloff` to determine the amount of blank space to mimic the behaviour of scrolloff.
 
-[Demo](https://user-images.githubusercontent.com/23695024/216339798-d4d96286-937a-40ca-8228-715e6e549296.mp4)
+https://user-images.githubusercontent.com/23695024/216361766-34784d03-d9ae-4510-aee1-1536038c100f.mp4
 
 Getting started
 ---------------
