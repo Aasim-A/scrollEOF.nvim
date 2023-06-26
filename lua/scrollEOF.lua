@@ -3,7 +3,6 @@ local M = {}
 local mode_disabled = false
 local filetype_disabled = false
 
-local scroll_key = vim.api.nvim_replace_termcodes('<C-e>', true, true, true)
 local function check_eof_scrolloff()
   if mode_disabled or filetype_disabled then
     return
@@ -16,8 +15,8 @@ local function check_eof_scrolloff()
   local distance_to_last_line = vim.fn.line('$') - win_view.lnum
 
   if distance_to_last_line < scrolloff and scrolloff_line_count + distance_to_last_line < scrolloff then
-    local repeat_count = scrolloff - (scrolloff_line_count + distance_to_last_line)
-    vim.api.nvim_feedkeys(repeat_count .. scroll_key, 'n', false)
+    win_view.topline = win_view.topline + scrolloff - (scrolloff_line_count + distance_to_last_line)
+    vim.fn.winrestview(win_view)
   end
 end
 
