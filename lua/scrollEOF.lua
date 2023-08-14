@@ -30,11 +30,15 @@ local function check_eof_scrolloff()
   end
 
   local win_height = vim.api.nvim_win_get_height(0)
+  local last_line = vim.fn.line('$')
+  local win_last_line = vim.fn.line('w$')
+  
+  -- PERF avoid calculations when far away from the end of file
+  if win_last_line + win_height < last_line then return end
+
   local win_view = vim.fn.winsaveview()
   local scrolloff = math.min(vim.o.scrolloff, math.floor(win_height / 2))
   local cur_line = win_view.lnum
-  local last_line = vim.fn.line('$')
-  local win_last_line = vim.fn.line('w$')
   local win_top_line = win_view.topline
 
   local visual_distance_to_eof = last_line - cur_line - folded_lines_between(cur_line, last_line)
