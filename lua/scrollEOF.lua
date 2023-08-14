@@ -11,8 +11,26 @@ local function check_eof_scrolloff()
   local win_height = vim.api.nvim_win_get_height(0)
   local win_view = vim.fn.winsaveview()
   local scrolloff = math.min(vim.o.scrolloff, math.floor(win_height / 2))
-  local scrolloff_line_count = win_height - (vim.fn.line('w$') - win_view.topline + 1)
-  local distance_to_last_line = vim.fn.line('$') - win_view.lnum
+  local cur_line = win_view.lnum
+  local last_line = vim.fn.line('$')
+
+  -- determine the number of folded lines between cursorline and end of file
+  local folded_lines = 0
+  local next_fold_end_ln = -1
+  for ln = cur_line, last_line, 1 do
+    if ln > next_fold_end_ln then -- skip folded lines we already added to the count
+      next_fold_end_ln = vim.fn.foldclosedend(ln)
+      local is_folded_line = next_fold_end_ln ~= -1
+      if is_folded_line then
+        local fold_size = next_fold_end_ln - ln
+        folded_lines = folded_lines + fold_size
+      end
+    end
+  end
+
+  local last_line_in_win = vim.fn.line('w$') - folded_lines
+  local distance_to_last_line = last_line - cur_line - folded_lines
+  local scrolloff_line_count = win_height - (last_line_in_win - win_view.topline + 1)
 
   if distance_to_last_line < scrolloff and scrolloff_line_count + distance_to_last_line < scrolloff then
     win_view.topline = win_view.topline + scrolloff - (scrolloff_line_count + distance_to_last_line)
