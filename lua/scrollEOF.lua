@@ -3,7 +3,7 @@ local M = {}
 local mode_disabled = false
 local filetype_disabled = false
 
----counts the number of folded lines between two line numbers
+---Counts the number of folded lines between two line numbers
 ---@param lnum1 number
 ---@param lnum2 number
 ---@return number
@@ -21,6 +21,7 @@ local function folded_lines_between(lnum1, lnum2)
       end
     end
   end
+
   return folded_lines
 end
 
@@ -32,7 +33,7 @@ local function check_eof_scrolloff()
   local win_height = vim.api.nvim_win_get_height(0)
   local last_line = vim.fn.line('$')
   local win_last_line = vim.fn.line('w$')
-  
+
   -- PERF avoid calculations when far away from the end of file
   if win_last_line + win_height < last_line then return end
 
@@ -40,15 +41,12 @@ local function check_eof_scrolloff()
   local scrolloff = math.min(vim.o.scrolloff, math.floor(win_height / 2))
   local cur_line = win_view.lnum
   local win_top_line = win_view.topline
-
   local visual_distance_to_eof = last_line - cur_line - folded_lines_between(cur_line, last_line)
   local visual_last_line_in_win = win_last_line - folded_lines_between(win_top_line, win_last_line)
-  
   local scrolloff_line_count = win_height - (visual_last_line_in_win - win_top_line + 1)
 
   if visual_distance_to_eof < scrolloff and scrolloff_line_count + visual_distance_to_eof < scrolloff then
-    win_view.topline = win_view.topline + scrolloff - (scrolloff_line_count + visual_distance_to_eof)
-    vim.fn.winrestview(win_view)
+    vim.fn.winrestview({ topline = win_view.topline + scrolloff - (scrolloff_line_count + visual_distance_to_eof) })
   end
 end
 
