@@ -30,7 +30,7 @@ local function check_eof_scrolloff()
     return
   end
 
-  local win_height = vim.api.nvim_win_get_height(0)
+  local win_height = vim.fn.winheight(0)
   local last_line = vim.fn.line('$')
   local win_last_line = vim.fn.line('w$')
 
