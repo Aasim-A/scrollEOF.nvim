@@ -25,9 +25,17 @@ local function folded_lines_between(lnum1, lnum2)
   return folded_lines
 end
 
-local function check_eof_scrolloff()
+local function check_eof_scrolloff(ev)
   if mode_disabled or filetype_disabled then
     return
+  end
+
+  if ev.event == 'WinScrolled' then
+    local win_id = vim.api.nvim_get_current_win()
+    local win_event = vim.v.event[tostring(win_id)]
+    if win_event ~= nil and win_event.topline <= 0 then
+      return
+    end
   end
 
   local win_height = vim.fn.winheight(0)
