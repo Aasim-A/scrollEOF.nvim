@@ -8,13 +8,23 @@ Getting started
 ---------------
 ### Install
 
-Using [vim-plug](https://github.com/junegunn/vim-plug):
-```vim
-Plug 'Aasim-A/scrollEOF.nvim'
+Using [lazy](https://github.com/folke/lazy.nvim)
+```lua
+{
+  'Aasim-A/scrollEOF.nvim',
+  event = { 'CursorMoved', 'WinScrolled' },
+  opts = {},
+}
 ```
+
 Using [packer](https://github.com/wbthomason/packer.nvim):
 ```lua
 use('Aasim-A/scrollEOF.nvim')
+```
+
+Using [vim-plug](https://github.com/junegunn/vim-plug):
+```vim
+Plug 'Aasim-A/scrollEOF.nvim'
 ```
 
 ### Setup
@@ -41,7 +51,7 @@ require('scrollEOF').setup({
   insert_mode = false,
   -- List of filetypes to disable scrollEOF for.
   disabled_filetypes = {},
-  -- List of modes to disable scrollEOF for. see https://neovim.io/doc/user/builtin.html#mode() for available modes.
+  -- List of modes to disable scrollEOF for. see https://neovim.io/doc/user/builtin.html#mode()
   disabled_modes = {},
 })
 ```
