@@ -8,6 +8,13 @@ local function check_eof_scrolloff(ev)
     return
   end
 
+  if M.opts.floating == false then
+    local curr_win = vim.api.nvim_win_get_config(0)
+    if curr_win.relative ~= '' then
+      return
+    end
+  end
+
   if ev.event == 'WinScrolled' then
     local win_id = vim.api.nvim_get_current_win()
     local win_event = vim.v.event[tostring(win_id)]
@@ -27,13 +34,15 @@ local function check_eof_scrolloff(ev)
   end
 end
 
+local default_opts = {
+  pattern = '*',
+  insert_mode = false,
+  floating = true,
+  disabled_filetypes = {},
+  disabled_modes = {},
+}
+
 M.setup = function(opts)
-  local default_opts = {
-    pattern = '*',
-    insert_mode = false,
-    disabled_filetypes = {},
-    disabled_modes = {},
-  }
 
   if opts == nil then
     opts = default_opts
@@ -45,43 +54,45 @@ M.setup = function(opts)
     end
   end
 
+  M.opts = opts
+
   local disabled_filetypes_hashmap = {}
-  for _, val in pairs(opts.disabled_filetypes) do
+  for _, val in pairs(M.opts.disabled_filetypes) do
     disabled_filetypes_hashmap[val] = true
   end
-  opts.disabled_filetypes = disabled_filetypes_hashmap
+  M.opts.disabled_filetypes = disabled_filetypes_hashmap
 
   local disabled_modes_hashmap = {}
-  for _, val in pairs(opts.disabled_modes) do
+  for _, val in pairs(M.opts.disabled_modes) do
     disabled_modes_hashmap[val] = true
   end
-  opts.disabled_modes = disabled_modes_hashmap
+  M.opts.disabled_modes = disabled_modes_hashmap
 
   local autocmds = { 'CursorMoved', 'WinScrolled' }
-  if opts.insert_mode then
+  if M.opts.insert_mode then
     table.insert(autocmds, 'CursorMovedI')
   end
 
   local scrollEOF_group = vim.api.nvim_create_augroup('ScrollEOF', { clear = true })
   vim.api.nvim_create_autocmd('BufEnter', {
     group = scrollEOF_group,
-    pattern = opts.pattern,
+    pattern = M.opts.pattern,
     callback = function()
-      filetype_disabled = opts.disabled_filetypes[vim.o.filetype] == true
+      filetype_disabled = M.opts.disabled_filetypes[vim.o.filetype] == true
     end,
   })
 
   vim.api.nvim_create_autocmd('ModeChanged', {
     group = scrollEOF_group,
-    pattern = opts.pattern,
+    pattern = M.opts.pattern,
     callback = function()
-      mode_disabled = opts.disabled_modes[vim.api.nvim_get_mode().mode] == true
+      mode_disabled = M.opts.disabled_modes[vim.api.nvim_get_mode().mode] == true
     end,
   })
 
   vim.api.nvim_create_autocmd(autocmds, {
     group = scrollEOF_group,
-    pattern = opts.pattern,
+    pattern = M.opts.pattern,
     callback = check_eof_scrolloff,
   })
 end
