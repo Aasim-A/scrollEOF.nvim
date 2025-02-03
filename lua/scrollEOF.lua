@@ -30,7 +30,10 @@ local function check_eof_scrolloff(ev)
 
   if visual_distance_to_eof < scrolloff then
     local win_view = vim.fn.winsaveview()
-    vim.fn.winrestview({ topline = win_view.topline + scrolloff - visual_distance_to_eof })
+    vim.fn.winrestview({
+      skipcol = 0, -- Without this, `gg` `G` can cause the cursor position to be shown incorrectly
+      topline = win_view.topline + scrolloff - visual_distance_to_eof,
+    })
   end
 end
 
