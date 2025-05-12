@@ -57,3 +57,6 @@ require('scrollEOF').setup({
   disabled_modes = {},
 })
 ```
+
+> [!NOTE]  
+> When using large `scrolloff` values i.e. larger than half of the number of lines on the screen, this plugin will override the `scrolloff` value to be half of the screen lines to avoid conflict from vim trying to prevent scrolloff when reaching end of file.
