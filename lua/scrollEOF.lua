@@ -2,6 +2,8 @@ local M = {}
 
 local mode_disabled = false
 local filetype_disabled = false
+local initial_scrolloff = vim.o.scrolloff
+local scrolloff = vim.o.scrolloff
 
 local function check_eof_scrolloff(ev)
   if mode_disabled or filetype_disabled then
@@ -24,23 +26,14 @@ local function check_eof_scrolloff(ev)
   end
 
   local win_height = vim.fn.winheight(0)
-  local half_win_height = math.floor(win_height / 2)
   local win_cur_line = vim.fn.winline()
   local visual_distance_to_eof = win_height - win_cur_line
 
-  if vim.o.scrolloff > half_win_height then
-    vim.o.scrolloff = half_win_height
-  end
-
-  if win_height % 2 == 0 and vim.o.scrolloff == half_win_height then
-    vim.o.scrolloff = vim.o.scrolloff - 1
-  end
-
-  if visual_distance_to_eof < vim.o.scrolloff then
+  if visual_distance_to_eof < scrolloff then
     local win_view = vim.fn.winsaveview()
     vim.fn.winrestview({
       skipcol = 0, -- Without this, `gg` `G` can cause the cursor position to be shown incorrectly
-      topline = win_view.topline + vim.o.scrolloff - visual_distance_to_eof,
+      topline = win_view.topline + scrolloff - visual_distance_to_eof,
     })
   end
 end
@@ -52,6 +45,16 @@ local default_opts = {
   disabled_filetypes = {},
   disabled_modes = {},
 }
+
+local vim_resized_cb = function()
+  local win_height = vim.fn.winheight(0)
+  local half_win_height = math.floor(win_height / 2)
+
+  if initial_scrolloff < half_win_height then return end
+
+  scrolloff = half_win_height
+  vim.o.scrolloff = win_height % 2 == 0 and scrolloff - 1 or scrolloff
+end
 
 M.setup = function(opts)
   if opts == nil then
@@ -100,11 +103,20 @@ M.setup = function(opts)
     end,
   })
 
+  vim.api.nvim_create_autocmd('VimResized', {
+    group = scrollEOF_group,
+    pattern = M.opts.pattern,
+    callback = vim_resized_cb,
+  })
+
   vim.api.nvim_create_autocmd(autocmds, {
     group = scrollEOF_group,
     pattern = M.opts.pattern,
     callback = check_eof_scrolloff,
   })
+
+  vim_resized_cb()
+  vim.defer_fn(vim_resized_cb, 0)
 end
 
 return M
