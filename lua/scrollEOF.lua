@@ -1,11 +1,11 @@
 local M = {}
 
 local mode_disabled = false
-local filetype_disabled = false
 local initial_scrolloff = vim.o.scrolloff
 local scrolloff = vim.o.scrolloff
 
 local function check_eof_scrolloff(ev)
+  local filetype_disabled = M.opts.disabled_filetypes[vim.o.filetype] == true
   if mode_disabled or filetype_disabled then
     return
   end
@@ -106,10 +106,7 @@ M.setup = function(opts)
   vim.api.nvim_create_autocmd({ 'VimResized', 'BufEnter' }, {
     group = scrollEOF_group,
     pattern = M.opts.pattern,
-    callback = function()
-      filetype_disabled = M.opts.disabled_filetypes[vim.o.filetype] == true
-      vim_resized_cb()
-    end,
+    callback = vim_resized_cb,
   })
 
   vim.api.nvim_create_autocmd(autocmds, {
