@@ -52,9 +52,9 @@ require('scrollEOF').setup({
   -- Whether or not scrollEOF should be enabled in floating windows
   floating = true,
   -- List of filetypes to disable scrollEOF for.
-  disabled_filetypes = {},
+  disabled_filetypes = { 'terminal' },
   -- List of modes to disable scrollEOF for. see https://neovim.io/doc/user/builtin.html#mode()
-  disabled_modes = {},
+  disabled_modes = { 't', 'nt' },
 })
 ```
 

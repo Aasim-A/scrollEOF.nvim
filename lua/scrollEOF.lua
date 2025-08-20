@@ -42,8 +42,8 @@ local default_opts = {
   pattern = '*',
   insert_mode = false,
   floating = true,
-  disabled_filetypes = {},
-  disabled_modes = {},
+  disabled_filetypes = { 'terminal' },
+  disabled_modes = { 't', 'nt' },
 }
 
 local vim_resized_cb = function()
