@@ -60,7 +60,7 @@ local vim_resized_cb = function()
   end
 
   scrolloff = half_win_height
-  vim.o.scrolloff = win_height % 2 == 0 and scrolloff - 1 or scrolloff
+	vim.o.scrolloff = (win_height % 2 == 0 and scrolloff > 0) and scrolloff - 1 or scrolloff
 end
 
 M.setup = function(opts)
