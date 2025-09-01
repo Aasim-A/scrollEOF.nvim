@@ -4,9 +4,12 @@ local mode_disabled = false
 local initial_scrolloff = vim.o.scrolloff
 local scrolloff = vim.o.scrolloff
 
+local function is_disabled()
+  return mode_disabled or M.opts.disabled_filetypes[vim.o.filetype] == true
+end
+
 local function check_eof_scrolloff(ev)
-  local filetype_disabled = M.opts.disabled_filetypes[vim.o.filetype] == true
-  if mode_disabled or filetype_disabled then
+  if is_disabled() then
     return
   end
 
@@ -47,6 +50,10 @@ local default_opts = {
 }
 
 local vim_resized_cb = function()
+  if is_disabled() then
+    return
+  end
+
   local win_height = vim.fn.winheight(0)
   local half_win_height = math.floor(win_height / 2)
 
