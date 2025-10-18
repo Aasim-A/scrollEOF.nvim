@@ -53,6 +53,10 @@ require('scrollEOF').setup({
   floating = true,
   -- List of filetypes to disable scrollEOF for.
   disabled_filetypes = { 'terminal' },
+  -- List of filetypes to enable scrollEOF for. 
+  -- When empty, scrollEOF is enabled for all filetypes except the disabled_filetypes.
+  -- When specified, scrollEOF is only enabled for the listed filetypes.
+  enabled_filetyles = {},
   -- List of modes to disable scrollEOF for. see https://neovim.io/doc/user/builtin.html#mode()
   disabled_modes = { 't', 'nt' },
 })
@@ -60,3 +64,4 @@ require('scrollEOF').setup({
 
 > [!NOTE]  
 > When using large `scrolloff` values i.e. larger than half of the number of lines on the screen, this plugin will override the `scrolloff` value to be half of the screen lines to avoid conflict from vim trying to prevent scrolloff when reaching end of file.
+

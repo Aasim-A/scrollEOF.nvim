@@ -4,8 +4,16 @@ local mode_disabled = false
 local initial_scrolloff = vim.o.scrolloff
 local scrolloff = vim.o.scrolloff
 
+local function filetype_disabled()
+  if next(M.opts.enabled_filetypes) == nil then
+    return M.opts.disabled_filetypes[vim.o.filetype] == true
+  else
+    return M.opts.enabled_filetypes[vim.o.filetype] == nil
+  end
+end
+
 local function is_disabled()
-  return mode_disabled or M.opts.disabled_filetypes[vim.o.filetype] == true
+  return mode_disabled or filetype_disabled()
 end
 
 local function check_eof_scrolloff(ev)
@@ -46,6 +54,7 @@ local default_opts = {
   insert_mode = false,
   floating = true,
   disabled_filetypes = { 'terminal' },
+  enabled_filetypes = {},
   disabled_modes = { 't', 'nt' },
 }
 
@@ -88,6 +97,12 @@ M.setup = function(opts)
     disabled_filetypes_hashmap[val] = true
   end
   M.opts.disabled_filetypes = disabled_filetypes_hashmap
+
+  local enabled_filetypes_hashmap = {}
+  for _, val in pairs(M.opts.enabled_filetypes) do
+    enabled_filetypes_hashmap[val] = true
+  end
+  M.opts.enabled_filetypes = enabled_filetypes_hashmap
 
   local disabled_modes_hashmap = {}
   for _, val in pairs(M.opts.disabled_modes) do
