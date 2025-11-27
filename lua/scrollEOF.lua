@@ -9,6 +9,12 @@ local function is_disabled()
 end
 
 local function check_eof_scrolloff(ev)
+  if type(M.opts.prehook) == 'function' then
+    local ok, result = pcall(M.opts.prehook, vim.api.nvim_get_current_buf(), ev)
+    if ok and result == false then
+      return
+    end
+  end
   if is_disabled() then
     return
   end
@@ -47,9 +53,10 @@ local default_opts = {
   floating = true,
   disabled_filetypes = { 'terminal' },
   disabled_modes = { 't', 'nt' },
+  prehook = nil,
 }
 
-local vim_resized_cb = function()
+local vim_resized_cb = function ()
   if is_disabled() then
     return
   end
@@ -67,10 +74,10 @@ local vim_resized_cb = function()
   end
 
   scrolloff = half_win_height
-	vim.o.scrolloff = (win_height % 2 == 0 and scrolloff > 0) and scrolloff - 1 or scrolloff
+  vim.o.scrolloff = (win_height % 2 == 0 and scrolloff > 0) and scrolloff - 1 or scrolloff
 end
 
-M.setup = function(opts)
+M.setup = function (opts)
   if opts == nil then
     opts = default_opts
   else
@@ -105,7 +112,7 @@ M.setup = function(opts)
   vim.api.nvim_create_autocmd('ModeChanged', {
     group = scrollEOF_group,
     pattern = M.opts.pattern,
-    callback = function()
+    callback = function ()
       mode_disabled = M.opts.disabled_modes[vim.api.nvim_get_mode().mode] == true
     end,
   })
