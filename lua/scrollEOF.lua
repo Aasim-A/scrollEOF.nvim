@@ -56,7 +56,7 @@ local default_opts = {
   prehook = nil,
 }
 
-local vim_resized_cb = function ()
+local vim_resized_cb = function()
   if is_disabled() then
     return
   end
@@ -77,7 +77,7 @@ local vim_resized_cb = function ()
   vim.o.scrolloff = (win_height % 2 == 0 and scrolloff > 0) and scrolloff - 1 or scrolloff
 end
 
-M.setup = function (opts)
+M.setup = function(opts)
   if opts == nil then
     opts = default_opts
   else
@@ -112,7 +112,7 @@ M.setup = function (opts)
   vim.api.nvim_create_autocmd('ModeChanged', {
     group = scrollEOF_group,
     pattern = M.opts.pattern,
-    callback = function ()
+    callback = function()
       mode_disabled = M.opts.disabled_modes[vim.api.nvim_get_mode().mode] == true
     end,
   })
