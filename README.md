@@ -1,6 +1,8 @@
 scrollEOF.nvim
 ==============
-A simple and lightweight plugin to make scrolloff go past the end of the file. It uses the value of `scrolloff` to determine the amount of blank space to mimic the behaviour of scrolloff.
+A simple and lightweight plugin to make scrolloff go past the end of the file.
+It uses the value of `scrolloff` to determine the amount of blank space to mimic the behaviour of scrolloff.
+Alternatively, it can be configured to use a relative distance based on the window height.
 
 https://user-images.githubusercontent.com/23695024/216361766-34784d03-d9ae-4510-aee1-1536038c100f.mp4
 
@@ -29,7 +31,7 @@ Plug 'Aasim-A/scrollEOF.nvim'
 
 ### Setup
 #### Quick start
-Make sure that you set the `scrolloff` setting then add the following line to your Neovim config:
+Unless `scrollEOF` is configured to use a relative distance, make sure `scrolloff` is set before adding the following line to your Neovim config:
 
 Lua:
 ```lua
@@ -55,6 +57,10 @@ require('scrollEOF').setup({
   disabled_filetypes = { 'terminal' },
   -- List of modes to disable scrollEOF for. see https://neovim.io/doc/user/builtin.html#mode()
   disabled_modes = { 't', 'nt' },
+  -- If set to a number > 1, scrolloff is calculated as floor(window_height / n)
+  -- and dynamically updated whenever the window changes.
+  -- This ignores your existing global scrolloff value.
+  relative_scrolloff = 0,
 })
 ```
 
