@@ -1,8 +1,7 @@
 local M = {}
 
 local mode_disabled = false
-local initial_scrolloff = vim.o.scrolloff
-local scrolloff = vim.o.scrolloff
+local relative_scrolloff = 0
 
 local function is_disabled()
   return mode_disabled or M.opts.disabled_filetypes[vim.o.filetype] == true
@@ -20,8 +19,8 @@ local function check_eof_scrolloff(ev)
     end
   end
 
-  if ev.event == 'WinScrolled' then
-    local win_id = vim.api.nvim_get_current_win()
+  local win_id = vim.api.nvim_get_current_win()
+  if ev ~= nil and ev.event == 'WinScrolled' then
     local win_event = vim.v.event[tostring(win_id)]
     if win_event ~= nil and win_event.topline <= 0 then
       return
@@ -31,6 +30,8 @@ local function check_eof_scrolloff(ev)
   local win_height = vim.fn.winheight(0)
   local win_cur_line = vim.fn.winline()
   local visual_distance_to_eof = win_height - win_cur_line
+  --- FIXME: when global scrolloff is set after Neovim startup to be much higher than winheight, window-local scrolloff somehow sets to -1
+  local scrolloff = vim.wo[win_id].scrolloff
 
   if visual_distance_to_eof < scrolloff then
     local win_view = vim.fn.winsaveview()
@@ -47,30 +48,41 @@ local default_opts = {
   floating = true,
   disabled_filetypes = { 'terminal' },
   disabled_modes = { 't', 'nt' },
+  relative_scrolloff = 0,
 }
 
-local vim_resized_cb = function()
+local function vim_resized_cb(ev)
   if is_disabled() then
     return
   end
 
-  local win_height = vim.fn.winheight(0)
-  local half_win_height = math.floor(win_height / 2)
-
-  if initial_scrolloff < half_win_height then
-    if vim.o.scrolloff < initial_scrolloff then
-      vim.o.scrolloff = initial_scrolloff
-      scrolloff = initial_scrolloff
-    end
-
-    return
+  ---@type integer[]
+  local win_ids = {}
+  if ev ~= nil and ev.event == "WinResized" then
+    win_ids = vim.v.event.windows or {}
+  else
+    table.insert(win_ids, vim.api.nvim_get_current_win())
   end
 
-  scrolloff = half_win_height
-	vim.o.scrolloff = (win_height % 2 == 0 and scrolloff > 0) and scrolloff - 1 or scrolloff
+  for _, id in ipairs(win_ids) do
+    local win_height = vim.fn.winheight(id)
+    if relative_scrolloff > 1 then
+      vim.wo[id].scrolloff = math.floor(win_height / relative_scrolloff)
+      goto continue
+    end
+
+    local half_win_height = math.floor(win_height / 2)
+    if vim.o.scrolloff < half_win_height then
+      vim.wo[id].scrolloff = vim.o.scrolloff
+      goto continue
+    end
+
+    vim.wo[id].scrolloff = (win_height % 2 == 0 and half_win_height > 0) and half_win_height - 1 or half_win_height
+    ::continue::
+  end
 end
 
-M.setup = function(opts)
+function M.setup(opts)
   if opts == nil then
     opts = default_opts
   else
@@ -95,10 +107,12 @@ M.setup = function(opts)
   end
   M.opts.disabled_modes = disabled_modes_hashmap
 
-  local autocmds = { 'CursorMoved', 'WinScrolled' }
+  local autocmds = { 'CursorMoved', 'WinScrolled', "WinNew", }
   if M.opts.insert_mode then
     table.insert(autocmds, 'CursorMovedI')
   end
+
+  relative_scrolloff = M.opts.relative_scrolloff
 
   local scrollEOF_group = vim.api.nvim_create_augroup('ScrollEOF', { clear = true })
 
@@ -110,7 +124,7 @@ M.setup = function(opts)
     end,
   })
 
-  vim.api.nvim_create_autocmd({ 'VimResized', 'BufEnter' }, {
+  vim.api.nvim_create_autocmd({ 'WinResized', 'WinEnter' }, {
     group = scrollEOF_group,
     pattern = M.opts.pattern,
     callback = vim_resized_cb,
@@ -123,7 +137,11 @@ M.setup = function(opts)
   })
 
   vim_resized_cb()
-  vim.defer_fn(vim_resized_cb, 0)
+  check_eof_scrolloff(nil)
+  vim.schedule(function()
+    vim_resized_cb()
+    check_eof_scrolloff()
+  end)
 end
 
 return M
